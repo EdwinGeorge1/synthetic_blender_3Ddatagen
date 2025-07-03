@@ -1,0 +1,6 @@
+.vscode/
+__pycache__/
+output_run/**
+!output_run/.gitkeep
+images/**
+!images/.gitkeep
