@@ -1,39 +1,48 @@
 # 3D Synthetic Data Generation with Blender
 
-A lightweight Blender pipeline to wrap arbitrary 2D images onto the **top face** of rectangular boxes and export them as COLLADA (`.dae`) models—ideal for creating synthetic datasets for computer vision, robotics, or AR/VR.
+A lightweight Blender pipeline to wrap arbitrary 2D images onto the **side face** of rectangular boxes and automatically generate a complete Gazebo model (SDF + textures).
 
 ## Features
-
-- **Automatic Aspect-Ratio Detection**  
-- **Interactive Prompts** for X → auto-compute Y → then prompt for Z  
-- **Consistent Naming Convention**  
-  - Texture: `texture_<W>x<D>x<H>.<ext>`  
-  - Model:   `box_<W>x<D>x<H>.dae`  
-- **Headless Operation** via `--background` for batch processing
+- Automatic aspect‐ratio detection
+- Interactive prompts for X/Z dimensions
+- Consistent naming conventions
+- One‐stop `main.py` to run Blender + SDF generator
+- Headless/batch operation
 
 ## Prerequisites
-
-- Blender 4.2.1  
-- Python 3.x (bundled with Blender)
+- **Blender 4.2.1** (or newer)
+- **Python 3.x**
+- `wrap_image_box.py`, `generate_sdf_model.py`, and `main.py` all located in your project root
 
 ## Installation & Setup
 
-1. **Download Blender**  
+1. **Download & extract Blender**  
    ```bash
    cd ~
    wget https://download.blender.org/release/Blender4.2/blender-4.2.1-linux-x64.tar.xz
    tar -xf blender-4.2.1-linux-x64.tar.xz
-   ```  
-2. **Make Executable**  
+   ```
+
+2. **Make Blender executable**  
    ```bash
    chmod +x ~/blender-4.2.1-linux-x64/blender
-   ```  
-3. **Project Layout**  
    ```
-   project-root/
-   ├── wrap_image_box.py
-   ├── images/
-   └── output/
+
+3. **(Optional) Add Blender to your PATH**  
+   ```bash
+   echo 'export BLENDER_PATH=~/blender-4.2.1-linux-x64/blender' >> ~/.bashrc
+   source ~/.bashrc
+   ```
+
+4. **Clone or copy this repository**  
+   ```bash
+   git clone <your-repo-url> project-root
+   cd project-root
+   ```
+
+5. **Make scripts executable**  
+   ```bash
+   chmod +x wrap_image_box.py generate_sdf_model.py main.py
    ```
 
 ## Directory Structure
@@ -41,57 +50,56 @@ A lightweight Blender pipeline to wrap arbitrary 2D images onto the **top face**
 ```
 project-root/
 ├── wrap_image_box.py
+├── generate_sdf_model.py
+├── main.py
 ├── images/
-├── output/
-│   └── <R>_<X>cmx<Y>cmx<Z>cm/
-│       ├── texture_<WxDxH>.<ext>
-│       └── box_<WxDxH>.dae
+│   └── pics_crop/
+├── output_tmp/        # Auto-created scratch directory
 └── README.md
 ```
 
-- `<R>` = aspect ratio (e.g., `4-3`)  
-- `<X>cmx<Y>cmx<Z>cm` = chosen dimensions  
-- `<WxDxH>` = dims in meters (dots → `p`)
-
 ## Usage
 
-```bash
-~/blender-4.2.1-linux-x64/blender   --background --python wrap_image_box.py --     --image ./images/1.png     --outdir ./output/4-3_100cmx75cmx25cm
-```
-
-1. Detects ratio:
-   ```
-   Detected image aspect ratio: 4:3
-   ```
-2. Prompt X:
-   ```
-   Enter desired length for the 4-part (in cm): 100
-   → computed other side (Y): 75.00 cm
-   ```
-3. Prompt Z:
-   ```
-   Enter desired third dimension (height, Z axis) in cm: 25
-   ```
-4. Generates:
-   ```
-   Done.  Texture → ./output/4-3_100cmx75cmx25cm/texture_1p0x0p75x0p25.png
-         Model   → ./output/4-3_100cmx75cmx25cm/box_1p0x0p75x0p25.dae
-   ```
+From **project root**, run:
 
 ```bash
-python3 generate_sdf_model.py   --dae box_0p08x0p2043x0p05.dae   --texture texture_0p08x0p2043x0p05.jpeg   --output /home/edwin/.gazebo/models/med_10
+./main.py   --image ./images/pics_crop/<your-image>.jpeg   --output ~/.gazebo/models/<model_name>
 ```
+
+- **Prompts** (unchanged from before):
+  ```
+  Enter box width (X) in cm:   # your desired width in cm
+  Enter box height (Z) in cm:  # your desired height in cm
+  ```
+- **On completion**:
+  ```
+  ✅ All done! Gazebo model ready in:
+      /home/you/.gazebo/models/<model_name>
+  ```
 
 ## Batch Generation
 
-Loop over images & dimensions, compute folder names, and call the Blender command.
+Automate multiple images:
+
+```bash
+for img in images/pics_crop/*.{png,jpeg,jpg}; do
+  base=$(basename "$img" | sed 's/\.[^.]*$//')
+  ./main.py --image "$img" --output ~/.gazebo/models/"$base"
+done
+```
+
+## Cleaning Up
+
+To remove the temporary working directory:
+
+```bash
+rm -rf output_tmp/
+```
 
 ## Contributing
 
-Pull requests welcome. Adjust UV margin or material settings as needed.
+Pull requests welcome! Feel free to adjust UV margins, material settings, or add new features.
 
 ## License
 
 MIT License. See [LICENSE](LICENSE).
-
----

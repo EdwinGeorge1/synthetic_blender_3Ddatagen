@@ -1,7 +1,7 @@
 .vscode/
 __pycache__/
-output_run/**
-!output_run/.gitkeep
+output_tmp/**
+!output_tmp/.gitkeep
 images/**
 !images/.gitkeep
 env
