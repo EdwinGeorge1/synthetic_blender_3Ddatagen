@@ -78,6 +78,10 @@ project-root/
          Model   → ./output/4-3_100cmx75cmx25cm/box_1p0x0p75x0p25.dae
    ```
 
+```bash
+python3 generate_sdf_model.py   --dae box_0p08x0p2043x0p05.dae   --texture texture_0p08x0p2043x0p05.jpeg   --output /home/edwin/.gazebo/models/med_10
+```
+
 ## Batch Generation
 
 Loop over images & dimensions, compute folder names, and call the Blender command.
