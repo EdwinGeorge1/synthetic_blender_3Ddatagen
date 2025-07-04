@@ -126,13 +126,12 @@ project-root/
    ✅ All done! Model in /home/you/.gazebo/models/<model_name>
    ```
 
-### Batch Generation
+### Batch Directory Generation
 
 ```bash
-for img in images/pics_crop/*.{png,jpeg,jpg}; do
-  name=$(basename "$img" | sed 's/\.[^.]*$//')
-  ./main.py --image "$img" --output ~/.gazebo/models/"$name"
-done
+./main.py \
+  --batch-dir ./images/ \
+  --output    ~/.gazebo/models/
 ```
 
 ### Selecting a Different Primitive
