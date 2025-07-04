@@ -5,6 +5,7 @@ import sys
 import os
 import shutil
 import argparse
+import math
 
 def parse_args():
     argv = sys.argv
@@ -14,7 +15,7 @@ def parse_args():
     idx = argv.index("--")
     cli_args = argv[idx + 1:]
 
-    p = argparse.ArgumentParser(description="Wrap an image onto the top face of a box using real-world dimensions.")
+    p = argparse.ArgumentParser(description="Wrap an image onto the side face of a standing box.")
     p.add_argument("--image", "-i", type=str, required=True, help="Path to image file")
     p.add_argument("--outdir", "-o", type=str, required=True, help="Output directory")
     return p.parse_args(cli_args)
@@ -98,38 +99,45 @@ def main():
     outdir = os.path.abspath(args.outdir)
     os.makedirs(outdir, exist_ok=True)
 
-    # Load image and get size
+    # Load image and get aspect ratio
     img = bpy.data.images.load(src_img)
     width_px, height_px = img.size
-    aspect_ratio_inverse = height_px / width_px
-    print(f"Image size: {width_px} x {height_px} px → aspect Y/X = {aspect_ratio_inverse:.3f}")
+    aspect_y_by_x = height_px / width_px
+    print(f"Image size: {width_px} x {height_px} px → aspect Y/X = {aspect_y_by_x:.3f}")
 
-    # Ask user for real-world X and Z
+    # Get real-world box size
     x_cm = float(input("Enter box width (X) in cm: ").strip())
     z_cm = float(input("Enter box height (Z) in cm: ").strip())
-    y_cm = x_cm * aspect_ratio_inverse
+    y_cm = x_cm * aspect_y_by_x  # calculated to preserve image proportion
 
     print(f"\n→ Box dimensions:")
     print(f"   Width  (X): {x_cm:.2f} cm")
-    print(f"   Depth  (Y): {y_cm:.2f} cm (auto-calculated from image)")
+    print(f"   Depth  (Y): {y_cm:.2f} cm (auto from image)")
     print(f"   Height (Z): {z_cm:.2f} cm")
 
-    # Convert to meters for Blender
+    # Convert cm to meters
     w, d, h = x_cm / 100.0, y_cm / 100.0, z_cm / 100.0
 
+    # File names
     dim_str = make_dim_string(w, d, h)
     ext = os.path.splitext(src_img)[1]
     tex_name = f"texture_{dim_str}{ext}"
     dae_name = f"box_{dim_str}.dae"
     tex_dest = os.path.join(outdir, tex_name)
     dae_dest = os.path.join(outdir, dae_name)
-
     shutil.copy(src_img, tex_dest)
 
+    # Create box
     clear_scene()
     box = create_box(w, d, h)
     create_materials(box, tex_dest)
     assign_face_materials_and_uv(box)
+
+    # Rotate the box to make the image appear on vertical side face
+    box.rotation_euler = (math.radians(90), 0, 0)  # rotate 90° around X-axis
+    bpy.context.view_layer.update()
+
+    # Export
     export_collada(dae_dest)
 
     print(f"\n✅ Exported box:")
