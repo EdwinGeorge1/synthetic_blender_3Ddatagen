@@ -1,0 +1,46 @@
+# configs/cylinder.yaml
+placeholders:
+  mass:               0.5
+  ixx:                0.02
+  ixy:                0
+  ixz:                0
+  iyy:                0.02
+  iyz:                0
+  izz:                0.02
+  static:             0
+  allow_auto_disable: 1
+
+# use cylinder primitive instead of mesh
+template: |
+  <?xml version='1.0'?>
+  <sdf version='1.7'>
+    <model name='{model_name}'>
+      <link name='link_0'>
+        <inertial>
+          <mass>{mass}</mass>
+          <inertia>
+            <ixx>{ixx}</ixx><ixy>{ixy}</ixy><ixz>{ixz}</ixz>
+            <iyy>{iyy}</iyy><iyz>{iyz}</iyz><izz>{izz}</izz>
+          </inertia>
+        </inertial>
+        <visual name='visual'>
+          <geometry>
+            <cylinder>
+              <radius>{radius}</radius>
+              <length>{length}</length>
+            </cylinder>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <geometry>
+            <cylinder>
+              <radius>{radius}</radius>
+              <length>{length}</length>
+            </cylinder>
+          </geometry>
+        </collision>
+      </link>
+      <static>{static}</static>
+      <allow_auto_disable>{allow_auto_disable}</allow_auto_disable>
+    </model>
+  </sdf>
